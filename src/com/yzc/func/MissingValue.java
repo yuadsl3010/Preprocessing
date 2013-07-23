@@ -1,56 +1,49 @@
 package com.yzc.func;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.yzc.src.Missing;
+
 public class MissingValue {
-	private String splitChar;
 	private Map<Integer, String> myData = new HashMap<Integer, String>();
+	private Map<Integer, List<Integer>> modify = new HashMap<Integer, List<Integer>>();
 	private int[] args;
-	private int[] average;
+	private double[] average;
 	private int[] total;
-	private String root;
-	private int Number;
+	private List<String[]> data;
 	public MissingValue() {
 
 	}
 
-	public void init(String arg0, int[] arg1, String arg2, int arg3) {
-		root = arg0;
-		args = arg1;
-		splitChar = arg2;
-		average = new int[args.length];
+	public void init(Missing arg0) {
+		args = arg0.parameters;
+		average = new double[args.length];
 		total = new int[args.length];
-		Number = arg3;
+		for(int i = 0; i < arg0.intParameters.length; i++)
+			myData.put(arg0.intParameters[i], arg0.strParameters[i]);
+		data = arg0.listParameters;
 	}
 
-	public void insert(int arg0, String arg1) {
-		myData.put(arg0, arg1);
-	}
-
-	public void clean() {
-		String line;
+	public List<String[]> clean() {
 		String tmpString[];
+		List<Integer> tmpList = new ArrayList<Integer>();
 		try {
 			for (int i = 0; i < args.length; i++) {
 				average[i] = 0;
 				total[i] = 0;
+				modify.put(args[i], new ArrayList<Integer>());
 			}
-			File file = new File(root);
-			FileReader in = new FileReader(file);
-			BufferedReader bufferReader = new BufferedReader(in);
-			while (null != (line = bufferReader.readLine())) {
-				tmpString = line.trim().split(splitChar);
-				if(tmpString.length != Number){
-					String tmpTemp[] = new String[Number];
-					for(int i = 0; i < tmpString.length; i++)
-						tmpTemp[i] = tmpString[i];
-					for(int i = tmpString.length; i < Number; i++)
-						tmpTemp[i] = "";
-					tmpString = tmpTemp;
+			for (int tmpI = 0; tmpI < data.size(); tmpI++) {
+				tmpString = data.get(tmpI);
+				for (int i = 0; i < tmpString.length; i++){
+					if(tmpString[i].length() == 0){
+						if(myData.containsKey(i))
+							tmpString[i] = myData.get(i);
+						else
+							modify.get(i).add(tmpI);
+					}
 				}
 				for (int i = 0; i < args.length; i++) {
 					if (tmpString[args[i]].length() == 0)
@@ -61,44 +54,19 @@ public class MissingValue {
 					}
 				}
 			}
-			if (bufferReader != null)
-				bufferReader.close();
-			if (in != null)
-				in.close();
 			for (int i = 0; i < args.length; i++)
 				myData.put(args[i], String.valueOf(average[i] / total[i]));
-			FileReader inClean = new FileReader(file);
-			BufferedReader inCleanR = new BufferedReader(inClean);
-			FileWriter writer = new FileWriter(root.substring(0, root.indexOf('.')) + "_new.txt", true);
-			String tmpWrite = "";
-			while (null != (line = inCleanR.readLine())){
-				tmpWrite = "";
-				tmpString = line.trim().split(splitChar);
-				if(tmpString.length != Number){
-					String tmpTemp[] = new String[Number];
-					for(int i = 0; i < tmpString.length; i++)
-						tmpTemp[i] = tmpString[i];
-					for(int i = tmpString.length; i < Number; i++)
-						tmpTemp[i] = "";
-					tmpString = tmpTemp;
+			for (int i = 0; i < args.length; i++){
+				tmpList = modify.get(args[i]);
+				for (int tmpInt : tmpList){
+					tmpString = data.get(tmpInt);
+					tmpString[args[i]] = myData.get(args[i]);
+					data.set(tmpInt, tmpString);
 				}
-				for (int i = 0; i < tmpString.length; i++) {
-					if (tmpString[i].length() == 0)
-						tmpWrite += myData.get(i) + splitChar;
-					else
-						tmpWrite += tmpString[i] + splitChar;
-				}
-				writer.write(tmpWrite.substring(0, tmpWrite.length() - 1));
-				writer.write("\r\n");
 			}
-			writer.flush();
-			writer.close();
-			if (inCleanR != null)
-				inCleanR.close();
-			if (inClean != null)
-				inClean.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return data;
 	}
 }

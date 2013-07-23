@@ -1,26 +1,18 @@
 package com.yzc.main;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.yzc.func.NosieProcessing;
-import com.yzc.func.Outlier;
-import com.yzc.src.Axis;
+import com.yzc.func.Integration;
+import com.yzc.func.MissingValue;
+import com.yzc.src.Missing;
+
 
 public class DO {
 	public static void main(String[] args){
-		NosieProcessing np = new NosieProcessing();
-		np.init(4);
-		np.insert(1);
-		np.insert(1);
-		np.insert(2);
-		np.insert(1);
-		np.insert(3);
-		np.insert(4);
-		np.insert(5);
-		np.insert(6);
-		np.insert(1);
-		np.insert(2);
-		np.insert(1);
-		np.nosieProcessing(2);
+		Integration itg = new Integration();
+		List<String[]> data = new ArrayList<String[]>();
+		data = itg.getData("C:\\Users\\yzc\\Desktop\\暑假\\预处理小组工作报告\\预处理小组工作报告\\杨金彪工作总结\\杨金彪工作总结\\Test.xls", 5);
+		System.out.println("done!");
 	}
 }
